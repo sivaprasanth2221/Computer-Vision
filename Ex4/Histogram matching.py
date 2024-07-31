@@ -4,7 +4,7 @@ from skimage import exposure
 from matplotlib import pyplot as plt
 
 source_image = cv2.imread('/Users/sivaprasanth/Documents/Computer Vision/Computer-Vision/img/image1.jpg', 0)  # Load the source image in grayscale
-target_image = cv2.imread('/Users/sivaprasanth/Documents/Computer Vision/Computer-Vision/img/image2.jpg', 0)  # Load the target image in grayscale
+target_image = cv2.imread('/Users/sivaprasanth/Documents/Computer Vision/Computer-Vision/img/blurry_img.jpeg', 0)  # Load the target image in grayscale
 
 matched_image = exposure.match_histograms(source_image, target_image)
 
