@@ -2,8 +2,8 @@ import cv2
 from matplotlib import pyplot as plt
 
 
-img1 = cv2.imread('/Users/sivaprasanth/Documents/Computer Vision/img/image1.jpg',cv2.IMREAD_GRAYSCALE)
-img2 = cv2.imread('/Users/sivaprasanth/Documents/Computer Vision/img/image2.jpg',cv2.IMREAD_GRAYSCALE)
+img1 = cv2.imread('/Users/sivaprasanth/Documents/Computer Vision/Computer-Vision/img/image1.jpg',cv2.IMREAD_GRAYSCALE)
+img2 = cv2.imread('/Users/sivaprasanth/Documents/Computer Vision/Computer-Vision/img/image2.jpg',cv2.IMREAD_GRAYSCALE)
 
 
 _, img1 = cv2.threshold(img1, 127, 255, cv2.THRESH_BINARY)

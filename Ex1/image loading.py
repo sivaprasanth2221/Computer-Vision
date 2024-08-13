@@ -1,10 +1,9 @@
 import cv2
-
-image = cv2.imread("/Users/sivaprasanth/Documents/Computer Vision/Photograph.jpg")
+import matplotlib.pyplot as plt
+image = cv2.imread("/Users/sivaprasanth/Documents/Computer Vision/Computer-Vision/img/image1.jpg")
 
 if image is None:
     print("Error: Unable to open image")
 else:
-    cv2.imshow("Image",image)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    plt.imshow(image)
+    plt.show()

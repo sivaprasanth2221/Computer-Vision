@@ -1,7 +1,7 @@
 import cv2
 import matplotlib.pyplot as plt
 
-rgb_img = cv2.imread("/Users/sivaprasanth/Documents/Computer Vision/Photograph.jpg", cv2.IMREAD_COLOR)
+rgb_img = cv2.imread("/Users/sivaprasanth/Documents/Computer Vision/Computer-Vision/img/image1.jpg", cv2.IMREAD_COLOR)
 rgb_img = cv2.cvtColor(rgb_img, cv2.COLOR_BGR2RGB)
 
 R, G, B = cv2.split(rgb_img)

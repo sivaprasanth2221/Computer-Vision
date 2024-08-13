@@ -1,9 +1,9 @@
 import cv2
 import matplotlib.pyplot as plt
 
-gray_img = cv2.imread("/Users/sivaprasanth/Documents/Computer Vision/Photograph.jpg",cv2.IMREAD_GRAYSCALE)
-bin_img = cv2.imread("/Users/sivaprasanth/Documents/Computer Vision/Photograph.jpg",cv2.IMREAD_GRAYSCALE)
-rgb_img = cv2.imread("/Users/sivaprasanth/Documents/Computer Vision/Photograph.jpg",cv2.IMREAD_COLOR)
+gray_img = cv2.imread("/Users/sivaprasanth/Documents/Computer Vision/Computer-Vision/img/image1.jpg",cv2.IMREAD_GRAYSCALE)
+bin_img = cv2.imread("/Users/sivaprasanth/Documents/Computer Vision/Computer-Vision/img/image1.jpg",cv2.IMREAD_GRAYSCALE)
+rgb_img = cv2.imread("/Users/sivaprasanth/Documents/Computer Vision/Computer-Vision/img/image1.jpg",cv2.IMREAD_COLOR)
 rgb_img = cv2.cvtColor(rgb_img, cv2.COLOR_BGR2RGB)
 _, bin_img = cv2.threshold(bin_img, 127, 255, cv2.THRESH_BINARY)
 
