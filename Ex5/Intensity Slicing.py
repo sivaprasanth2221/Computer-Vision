@@ -25,25 +25,29 @@ image = cv2.imread('/Users/sivaprasanth/Documents/Computer Vision/Computer-Visio
 
 sliced_image = intensity_level_slicing(image, 100, 200)
 
-bit_plane_image = bit_plane_slicing(image, 7)
-
 contrast_stretched_image = contrast_stretching(image)
 
-plt.figure(figsize=(25, 25))
+# Create subplots for displaying images
+plt.figure(figsize=(20, 20))
 
-plt.subplot(2, 2, 1)
+plt.subplot(3, 4, 1)
 plt.title("Original Image")
 plt.imshow(image, cmap='gray')
 
-plt.subplot(2, 2, 2)
+plt.subplot(3, 4, 2)
 plt.title("Contrast Stretched Image")
 plt.imshow(contrast_stretched_image, cmap='gray')
 
-plt.subplot(2, 2, 3)
+plt.subplot(3, 4, 3)
 plt.title("Intensity Level Sliced Image")
 plt.imshow(sliced_image, cmap='gray')
 
-plt.subplot(2, 2, 4)
-plt.title("Bit-plane Sliced Image")
-plt.imshow(bit_plane_image, cmap='gray')
+# Display all bit-planes
+for i in range(8):
+    bit_plane_image = bit_plane_slicing(image, i)
+    plt.subplot(3, 4, i + 4)
+    plt.title(f"Bit-plane {i}")
+    plt.imshow(bit_plane_image, cmap='gray')
+
+plt.tight_layout()
 plt.show()
