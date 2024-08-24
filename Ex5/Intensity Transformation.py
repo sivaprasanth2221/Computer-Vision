@@ -22,7 +22,7 @@ negative_image = negative_transformation(image)
 log_image = log_transformation(image)
 gamma_image = gamma_transformation(image, 2.2)
 
-plt.figure(figsize=(10,15))
+plt.figure(figsize=(10,8))
 plt.subplot(2, 2, 1)
 plt.title("Original Image")
 plt.imshow(image, cmap='gray')

@@ -56,11 +56,11 @@ def create_notch_filter(shape, notch_centers, radius):
 
 # Define notch centers and radius for the Notch filter
 notch_centers = [(crow, ccol), (crow-30, ccol-30)]
-radius_notch = 10
+radius_notch = 1
 
 # Define different notch centers and radius for the Optimum Notch filter
 optimum_notch_centers = [(crow+30, ccol+30), (crow-60, ccol-60)]
-radius_optimum_notch = 5
+radius_optimum_notch = 7
 
 # Create Notch and Optimum Notch Filters
 mask_notch = create_notch_filter(image.shape, notch_centers, radius_notch)
