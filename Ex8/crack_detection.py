@@ -29,10 +29,6 @@ kernel = np.ones((3, 3), np.uint8)
 cracks = cv2.morphologyEx(cracks, cv2.MORPH_CLOSE, kernel)
 cracks = cv2.morphologyEx(cracks, cv2.MORPH_OPEN, kernel)
 
-# # Display the detected cracks
-# cv2.imshow('Detected Cracks', cracks)
-# cv2.waitKey(0)
-# cv2.destroyAllWindows()
 plt.title("Detected Cracks")
 plt.imshow(cracks, cmap='gray')
 plt.show()

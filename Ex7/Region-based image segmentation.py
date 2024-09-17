@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 # Load the image in grayscale mode
 image = cv2.imread('/Users/sivaprasanth/Documents/Computer Vision/Computer-Vision/img/image.jpg', 0)
 
-def split_and_merge(img, threshold=20, min_size=4):
+def split_and_merge_fixed(img, threshold=20, min_size=4):
     def split_region(img, x, y, size):
         if size <= min_size:
             return img[y:y+size, x:x+size]
@@ -32,11 +32,12 @@ def split_and_merge(img, threshold=20, min_size=4):
         if max(mean_values) - min(mean_values) < threshold:
             return np.ones_like(top_left) * np.mean(mean_values)
         else:
-            # Resize smaller regions to match for concatenation
+            # Resize all regions to match the largest region before concatenation
             try:
-                top_left = resize_to_match(top_left, top_right)
-                bottom_left = resize_to_match(bottom_left, bottom_right)
-                return np.vstack((np.hstack((top_left, top_right)), np.hstack((bottom_left, bottom_right))))
+                regions_resized = resize_all_to_match(regions)
+                top = np.hstack((regions_resized[0], regions_resized[1]))
+                bottom = np.hstack((regions_resized[2], regions_resized[3]))
+                return np.vstack((top, bottom))
             except ValueError as e:
                 print(f"Error in combining regions: {e}")
                 return img[y:y+size, x:x+size]  # Return the original region if the combination fails
@@ -57,17 +58,19 @@ def split_and_merge(img, threshold=20, min_size=4):
     # Return the segmented image, cropped back to original size
     return segmented[:height, :width]
 
-def resize_to_match(region1, region2):
-    """Resize smaller region to match the shape of the larger region for concatenation."""
-    target_shape = max(region1.shape, region2.shape)
-    region1_resized = cv2.resize(region1, (target_shape[1], target_shape[0]), interpolation=cv2.INTER_NEAREST)
-    region2_resized = cv2.resize(region2, (target_shape[1], target_shape[0]), interpolation=cv2.INTER_NEAREST)
-    return region1_resized, region2_resized
+def resize_to_match(region, target_shape):
+    """Resize a single region to match a target shape."""
+    return cv2.resize(region, (target_shape[1], target_shape[0]), interpolation=cv2.INTER_NEAREST)
 
-# Apply the split and merge algorithm
-segmented_image = split_and_merge(image)
+def resize_all_to_match(regions):
+    """Resize all regions to match the shape of the largest region for concatenation."""
+    max_shape = max([r.shape for r in regions], key=lambda s: (s[0], s[1]))
+    return [resize_to_match(region, max_shape) for region in regions]
+
+# Apply the split and merge algorithm to your image
+segmented_image_fixed = split_and_merge_fixed(image)
 
 # Display the result
-plt.imshow(segmented_image, cmap='gray')
+plt.imshow(segmented_image_fixed, cmap='gray')
 plt.title('Region Splitting and Merging')
 plt.show()
