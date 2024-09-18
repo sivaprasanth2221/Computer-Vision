@@ -2,75 +2,138 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Load the image in grayscale mode
-image = cv2.imread('/Users/sivaprasanth/Documents/Computer Vision/Computer-Vision/img/image.jpg', 0)
+# Load the grayscale image
+img = cv2.imread('/Users/sivaprasanth/Documents/Computer Vision/Computer-Vision/img/coin.jpg', 0)
 
-def split_and_merge_fixed(img, threshold=20, min_size=4):
-    def split_region(img, x, y, size):
-        if size <= min_size:
-            return img[y:y+size, x:x+size]
 
-        half = size // 2
+def region_growing(img, seed, threshold=60):
+    # Initialize a blank image to store the region
+    region = np.zeros_like(img)
+    rows, cols = img.shape
+    visited = np.zeros_like(img, dtype=bool)
+    
+    # Define the seed point
+    seed_x, seed_y = seed
+    region[seed_x, seed_y] = 255
+    visited[seed_x, seed_y] = True
+    
+    # List to store the pixels to be processed
+    stack = [(seed_x, seed_y)]
+    
+    while stack:
+        x, y = stack.pop()
+        
+        # Check neighboring pixels
+        for dx in [-1, 0, 1]:
+            for dy in [-1, 0, 1]:
+                nx, ny = x + dx, y + dy
+                
+                if 0 <= nx < rows and 0 <= ny < cols and not visited[nx, ny]:
+                    # Check the intensity difference
+                    if abs(int(img[x, y]) - int(img[nx, ny])) < threshold:
+                        region[nx, ny] = 255
+                        stack.append((nx, ny))
+                    visited[nx, ny] = True
+    
+    return region
 
-        # Ensure we do not exceed the image boundary for odd sizes
-        x_end = min(x + size, img.shape[1])
-        y_end = min(y + size, img.shape[0])
 
-        # Handle the case where the size is not even by adjusting the split regions
-        top_left = split_region(img, x, y, half)
-        top_right = split_region(img, x + half, y, x_end - (x + half))
-        bottom_left = split_region(img, x, y + half, y_end - (y + half))
-        bottom_right = split_region(img, x + half, y + half, min(half, x_end - (x + half), y_end - (y + half)))
+# Create a copy of the input image to visualize the seed point
+seed_image = img.copy()
+seed_point = (100, 100)  # Example seed point
+cv2.circle(seed_image, seed_point, 3, (255, 0, 0), -1)  # Draw the seed point
 
-        # Combine the regions
-        regions = [top_left, top_right, bottom_left, bottom_right]
+# Apply region growing algorithm
+output = region_growing(img, seed_point)
 
-        # Compute the mean of each region
-        mean_values = [np.mean(region) for region in regions]
+fig, axs = plt.subplots(1, 3, figsize=(15, 5))
 
-        # Check if the regions are similar based on the threshold
-        if max(mean_values) - min(mean_values) < threshold:
-            return np.ones_like(top_left) * np.mean(mean_values)
-        else:
-            # Resize all regions to match the largest region before concatenation
-            try:
-                regions_resized = resize_all_to_match(regions)
-                top = np.hstack((regions_resized[0], regions_resized[1]))
-                bottom = np.hstack((regions_resized[2], regions_resized[3]))
-                return np.vstack((top, bottom))
-            except ValueError as e:
-                print(f"Error in combining regions: {e}")
-                return img[y:y+size, x:x+size]  # Return the original region if the combination fails
+# Original Image
+axs[0].imshow(img, cmap='gray')
+axs[0].set_title('Input Image')
+axs[0].axis('off')
 
-    # Ensure the image is square by padding
-    height, width = img.shape
-    new_size = max(height, width)
+# Seed Image
+axs[1].imshow(seed_image, cmap='gray')
+axs[1].set_title('Seed Image')
+axs[1].axis('off')
 
-    # Make new size a power of two for consistent splitting
-    new_size = 2 ** int(np.ceil(np.log2(new_size)))
+# Region Growing Output
+axs[2].imshow(output, cmap='gray')
+axs[2].set_title('Region Growing Output')
+axs[2].axis('off')
 
-    # Pad the image to the new size
-    padded_img = np.pad(img, ((0, new_size - height), (0, new_size - width)), mode='constant', constant_values=0)
+# Display the plots
+plt.tight_layout()
+plt.show()
 
-    # Perform the split and merge segmentation
-    segmented = split_region(padded_img, 0, 0, min(padded_img.shape))
 
-    # Return the segmented image, cropped back to original size
-    return segmented[:height, :width]
+def homogeneity_criteria(region, threshold=10):
+    """Check if a region is homogeneous based on intensity standard deviation."""
+    return np.std(region) < threshold
 
-def resize_to_match(region, target_shape):
-    """Resize a single region to match a target shape."""
-    return cv2.resize(region, (target_shape[1], target_shape[0]), interpolation=cv2.INTER_NEAREST)
+def split(img, threshold=10):
+    """Recursively split the image into smaller regions based on the homogeneity criterion."""
+    h, w = img.shape
+    if h <= 1 or w <= 1 or homogeneity_criteria(img, threshold):
+        return img
+    
+    h_half, w_half = h // 2, w // 2
+    
+    # Split the image into four regions
+    top_left = split(img[:h_half, :w_half], threshold)
+    top_right = split(img[:h_half, w_half:], threshold)
+    bottom_left = split(img[h_half:, :w_half], threshold)
+    bottom_right = split(img[h_half:, w_half:], threshold)
+    
+    # Combine the results
+    return np.block([[top_left, top_right], [bottom_left, bottom_right]])
 
-def resize_all_to_match(regions):
-    """Resize all regions to match the shape of the largest region for concatenation."""
-    max_shape = max([r.shape for r in regions], key=lambda s: (s[0], s[1]))
-    return [resize_to_match(region, max_shape) for region in regions]
+def merge(img, threshold=10):
+    """Merge regions based on homogeneity of adjacent regions."""
+    h, w = img.shape
+    output = img.copy()
+    
+    # Check adjacent regions to merge
+    for i in range(1, h):
+        for j in range(1, w):
+            # Compare the current pixel with its neighbors and merge if the difference is within the threshold
+            if abs(int(img[i, j]) - int(img[i - 1, j])) < threshold:
+                output[i, j] = img[i - 1, j]
+            if abs(int(img[i, j]) - int(img[i, j - 1])) < threshold:
+                output[i, j] = img[i, j - 1]
+    
+    return output
 
-# Apply the split and merge algorithm to your image
-segmented_image_fixed = split_and_merge_fixed(image)
+def split_and_merge(img, threshold=10):
+    """Perform split and merge segmentation."""
+    split_img = split(img, threshold)
+    merged_img = merge(split_img, threshold)
+    return split_img, merged_img
 
-# Display the result
-plt.imshow(segmented_image_fixed, cmap='gray')
-plt.title('Region Splitting and Merging')
+
+# Perform split and merge segmentation
+split_img, merged_img = split_and_merge(img, threshold=5)
+
+
+# Plot the input image, region splitting image, and region merging image
+fig, axs = plt.subplots(1, 3, figsize=(15, 5))
+
+# Input Image
+axs[0].imshow(img, cmap='gray')
+axs[0].set_title('Input Image')
+axs[0].axis('off')
+
+# Split Image
+axs[1].imshow(split_img, cmap='gray')
+axs[1].set_title('Region Splitting')
+axs[1].axis('off')
+
+# Merged Image
+axs[2].imshow(merged_img, cmap='gray')
+axs[2].set_title('Region Merging')
+axs[2].axis('off')
+
+# Display the plots
+plt.tight_layout()
 plt.show()

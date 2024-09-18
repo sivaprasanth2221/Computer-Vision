@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 
-image = cv2.imread('/Users/sivaprasanth/Documents/Computer Vision/Computer-Vision/img/image.jpg', 0)
+image = cv2.imread('/Users/sivaprasanth/Documents/Computer Vision/Computer-Vision/img/coins.png', 0)
 
 kernel = np.ones((5,5), np.uint8)
 
