@@ -16,12 +16,12 @@ right_image = np.roll(base_image, shift_value, axis=1)  # Shift right image to t
 right_image[:, -shift_value:] = 0
 
 # Step 4: Save the left and right images
-cv2.imwrite('/Users/sivaprasanth/Documents/Computer Vision/Computer-Vision/img/left_image.jpg', left_image)
-cv2.imwrite('/Users/sivaprasanth/Documents/Computer Vision/Computer-Vision/img/right_image.jpg', right_image)
+cv2.imwrite('/Users/sivaprasanth/Documents/Computer Vision/Computer-Vision/img/left_image.jpeg', left_image)
+cv2.imwrite('/Users/sivaprasanth/Documents/Computer Vision/Computer-Vision/img/right_image.jpeg', right_image)
 
 # Step 5: Load left and right images in grayscale
-left_img = cv2.imread('/Users/sivaprasanth/Documents/Computer Vision/Computer-Vision/img/left_image.jpg', cv2.IMREAD_GRAYSCALE)
-right_img = cv2.imread('/Users/sivaprasanth/Documents/Computer Vision/Computer-Vision/img/right_image.jpg', cv2.IMREAD_GRAYSCALE)
+left_img = cv2.imread('/Users/sivaprasanth/Documents/Computer Vision/Computer-Vision/img/left_image.jpeg', cv2.IMREAD_GRAYSCALE)
+right_img = cv2.imread('/Users/sivaprasanth/Documents/Computer Vision/Computer-Vision/img/right_image.jpeg', cv2.IMREAD_GRAYSCALE)
 
 # Step 6: Initialize StereoBM object
 stereo = cv2.StereoBM_create(numDisparities=16, blockSize=15)
