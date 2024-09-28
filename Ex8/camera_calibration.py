@@ -1,41 +1,82 @@
 import cv2
+import os
+import time
 import numpy as np
+import matplotlib.pyplot as plt
+%matplotlib inline
+from mpl_toolkits.axes_grid1 import ImageGrid
 
-# Termination criteria for corner sub-pixel refinement
-criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
+SQUARE_SIZE = 30
+BOARD_SIZE = (11,7)
 
-# Prepare object points like (0,0,0), (1,0,0), (2,0,0) ...,(6,5,0) for a 7x6 chessboard
-objp = np.zeros((6*7, 3), np.float32)
-objp[:, :2] = np.mgrid[0:7, 0:6].T.reshape(-1, 2)
+LEFT_PATH = '/Users/sivaprasanth/Documents/Computer Vision/Computer-Vision/img/chessboard/leftcamera'
+RIGHT_PATH = '/Users/sivaprasanth/Documents/Computer Vision/Computer-Vision/img/chessboard/rightcamera'
 
-# Arrays to store object points and image points from all the images
-objpoints = []  # 3d points in real-world space
-imgpoints = []  # 2d points in image plane
+print('We have {} Images from the left camera'.format(len(os.listdir(LEFT_PATH))))
+print('and {} Images from the right camera.'.format(len(os.listdir(RIGHT_PATH))))
 
-# Load images from a folder
-for i in range(1, 10):  # Assuming you have 9 images of the chessboard
-    img = cv2.imread(f'chessboard_{i}.jpg')
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+print('Before: {}, {}, {}, ...'.format(os.listdir(LEFT_PATH)[0], os.listdir(LEFT_PATH)[1], os.listdir(LEFT_PATH)[2]))
 
-    # Find the chessboard corners
-    ret, corners = cv2.findChessboardCorners(gray, (7, 6), None)
+def SortImageNames(path):
+    imagelist = sorted(os.listdir(path))
+    lengths = []
+    for name in imagelist:
+        lengths.append(len(name))
+    lengths = sorted(list(set(lengths)))
+    ImageNames, ImageNamesRaw = [], []
+    for l in lengths:
+        for name in imagelist:
+            if len(name) == l:
+                ImageNames.append(os.path.join(path, name))
+                ImageNamesRaw.append(name)
+    return ImageNames
+                
+Left_Paths = SortImageNames(LEFT_PATH)
+Right_Paths = SortImageNames(RIGHT_PATH)
 
-    # If found, add object points, image points (after refining them)
-    if ret:
-        objpoints.append(objp)
-        corners2 = cv2.cornerSubPix(gray, corners, (11, 11), (-1, -1), criteria)
-        imgpoints.append(corners2)
+print('After: {}, {}, {}, ...'.format(os.path.basename(Left_Paths[0]), os.path.basename(Left_Paths[1]), os.path.basename(Left_Paths[2])))
 
-        # Draw and display the corners
-        cv2.drawChessboardCorners(img, (7, 6), corners2, ret)
-        cv2.imshow('Chessboard', img)
-        cv2.waitKey(500)
+example_image = cv2.imread(Left_Paths[5])
+example_image = cv2.cvtColor(example_image, cv2.COLOR_BGR2GRAY)
 
-cv2.destroyAllWindows()
+ret, _ = cv2.findChessboardCorners(example_image, BOARD_SIZE)
+if ret:
+    print('Board Size {} is correct.'.format(BOARD_SIZE))
+else:
+    print('[ERROR] the Board Size is not correct!')
+    BOARD_SIZE = (0,0)
+    
+objpoints = np.zeros((BOARD_SIZE[0]*BOARD_SIZE[1], 3), np.float32)
+objpoints[:,:2] = np.mgrid[0:BOARD_SIZE[0], 0:BOARD_SIZE[1]].T.reshape(-1,2)
+objpoints *= SQUARE_SIZE
 
-# Camera calibration
-ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, gray.shape[::-1], None, None)
+def GenerateImagepoints(paths):
+    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
+    imgpoints = []
+    for name in paths:
+        img = cv2.imread(name)
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        ret, corners1 = cv2.findChessboardCorners(img, BOARD_SIZE)
+        if ret:
+            corners2 = cv2.cornerSubPix(gray, corners1, (4,4), (-1,-1), criteria)
+            imgpoints.append(corners2)
+    return imgpoints
 
-# Print the camera matrix and distortion coefficients
-print("Camera matrix:", mtx)
-print("Distortion coefficients:", dist)
+Left_imgpoints = GenerateImagepoints(Left_Paths)
+Right_imgpoints = GenerateImagepoints(Right_Paths)
+
+def DisplayImagePoints(path, imgpoints):
+    img = cv2.imread(path)
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    img = cv2.drawChessboardCorners(img, BOARD_SIZE, imgpoints, True)
+    return img
+    
+example_image_left = DisplayImagePoints(Left_Paths[15], Left_imgpoints[15])
+example_image_right = DisplayImagePoints(Right_Paths[15], Right_imgpoints[15])
+
+fig = plt.figure(figsize=(20,20))
+grid = ImageGrid(fig, 111, nrows_ncols=(1, 2), axes_pad=0.1)
+
+for ax, im in zip(grid, [example_image_left, example_image_right]):
+    ax.imshow(im)
+    ax.axis('off')

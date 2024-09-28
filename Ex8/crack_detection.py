@@ -18,7 +18,7 @@ gradient_magnitude = cv2.normalize(gradient_magnitude, None, 0, 255, cv2.NORM_MI
 gradient_magnitude = np.uint8(gradient_magnitude)
 
 # Thresholding to extract high-gradient areas (potential cracks)
-_, cracks = cv2.threshold(gradient_magnitude, 50, 255, cv2.THRESH_BINARY)
+_, cracks = cv2.threshold(gradient_magnitude, 100, 255, cv2.THRESH_BINARY)
 
 # Create a mask to exclude the outer boundary
 h, w = cracks.shape
